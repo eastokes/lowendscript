@@ -92,10 +92,18 @@ function print_warn {
 # applications
 ############################################################
 
+function install_curl {
+        check_install curl curl
+}
+
 function install_dash {
 	check_install dash dash
 	rm -f /bin/sh
 	ln -s dash /bin/sh
+}
+
+function install_ed {
+        check_install ed ed
 }
 
 function install_nano {
@@ -160,7 +168,7 @@ END
 }
 
 function install_exim4 {
-	check_install mail exim4
+	check_install exim4 exim4
 	if [ -f /etc/exim4/update-exim4.conf.conf ]
 	then
 		sed -i \
@@ -255,7 +263,7 @@ skip-character-set-client-handshake
 default_storage_engine=MyISAM
 skip-innodb
 
-log-slow-queries=/var/log/mysql/slow-queries.log
+slow_query_log_file=/var/log/mysql/slow-queries.log
 
 [client]
 default-character-set = utf8
@@ -279,7 +287,7 @@ function install_php {
 	check_install php5-cli php5-cli
 
 	# PHP modules
-	DEBIAN_FRONTEND=noninteractive apt-get -y install php5-apc php5-suhosin php5-curl php5-gd php5-intl php5-mcrypt php-gettext php5-mysql php5-sqlite
+	DEBIAN_FRONTEND=noninteractive apt-get -y install php5-apc php5-curl php5-gd php5-intl php5-mcrypt php-gettext php5-mysql php5-sqlite
 
 	echo 'Using PHP-FPM to manage PHP processes'
 	echo ' '
@@ -303,21 +311,6 @@ apc.post_max_size = 1000M
 apc.upload_max_filesize = 1000M
 apc.enable_cli=0
 apc.rfc1867=0
-END
-
-	mv /etc/php5/conf.d/suhosin.ini /root/bkps/suhosin.ini
-
-cat > /etc/php5/conf.d/suhosin.ini <<END
-; configuration for php suhosin module
-extension=suhosin.so
-suhosin.executor.include.whitelist="phar"
-suhosin.request.max_vars = 2048
-suhosin.post.max_vars = 2048
-suhosin.request.max_array_index_length = 256
-suhosin.post.max_array_index_length = 256
-suhosin.request.max_totalname_length = 8192
-suhosin.post.max_totalname_length = 8192
-suhosin.sql.bailout_on_error = Off
 END
 
 	if [ -f /etc/php5/fpm/php.ini ]
@@ -387,7 +380,7 @@ location / {
 	try_files \$uri \$uri/ /index.php\$is_args\$args;
 }
 
-# Pass PHP scripts to php-fastcgi listening on port 9000
+# Pass PHP scripts to php-fastcgi listening on socket
 location ~ \.php$ {
 
 	# Zero-day exploit defense.
@@ -415,7 +408,7 @@ location ~ \.php$ {
 	fastcgi_temp_file_write_size 256k;
 	fastcgi_intercept_errors    on;
 	fastcgi_ignore_client_abort off;
-	fastcgi_pass 127.0.0.1:9000;
+	fastcgi_pass unix:/var/run/php5-fpm.sock
 
 }
 # PHP search for file Exploit:
@@ -456,8 +449,8 @@ END
 			/etc/nginx/nginx.conf
  fi
 
-	# restart nginx
-	invoke-rc.d nginx restart
+	# reload nginx configuration files
+	invoke-rc.d nginx reload
 }
 
 function install_site {
@@ -523,8 +516,12 @@ END
 
 	# PHP/Nginx needs permission to access this
 	chown www-data:www-data -R "/var/www/$1"
-
-	invoke-rc.d nginx restart
+	
+	find "/var/www/$1/public" -type d -exec chmod 2775 {} +
+	find "/var/www/$1/public" -type f -exec chmod 0664 {} +
+	
+	# reload nginx configuration files
+	invoke-rc.d nginx reload
 
 	print_warn "New site successfully installed."
 	print_warn "You may can test PHP functionality by accessing $1/phpinfo.php"
@@ -629,7 +626,7 @@ server {
     {
         try_files \$uri =404;
 
-        fastcgi_pass 127.0.0.1:9000;
+        fastcgi_pass unix:/var/run/php5-fpm.sock;
         fastcgi_index index.php;
         fastcgi_param SCRIPT_FILENAME /var/www/$1/public\$fastcgi_script_name;
         include fastcgi_params;
@@ -657,7 +654,11 @@ END
 	# PHP/Nginx needs permission to access this
 	chown www-data:www-data -R "/var/www/$1"
 
-	invoke-rc.d nginx restart
+	find "/var/www/$1/public" -type d -exec chmod 2775 {} +
+	find "/var/www/$1/public" -type f -exec chmod 0664 {} +
+
+	# reload nginx configuration files
+	invoke-rc.d nginx reload
 
 	print_warn "New wordpress site successfully installed."
 }
@@ -910,13 +911,13 @@ function install_webmin {
 # Generate SSH Key
 ############################################################
 function gen_ssh_key {
-	print_warn "Generating the ssh-key (1024 bit)"
+	print_warn "Generating the ssh-key (4096 bit RSA)"
 	if [ -z "$1" ]
 	then
-		ssh-keygen -t dsa -b 1024 -f ~/id_rsa
+		ssh-keygen -t rsa -b 4096 -f ~/id_rsa
 		print_warn "generated ~/id_rsa"
 	else
-		ssh-keygen -t dsa -b 1024 -f ~/"$1"
+		ssh-keygen -t rsa -b 4096 -f ~/"$1"
 		print_warn "generated ~/$1"
 	fi
 }
@@ -1269,7 +1270,9 @@ system)
 	update_timezone
 	remove_unneeded
 	update_upgrade
+	install_curl
 	install_dash
+	install_ed
 	install_vim
 	install_nano
 	install_htop
@@ -1290,7 +1293,7 @@ system)
 	echo '  - iptables  [port]       (setup basic firewall with HTTP(S) open)'
 	echo '  - mysql                  (install MySQL and set root password)'
 	echo '  - nginx                  (install nginx and create sample PHP vhosts)'
-	echo '  - php                    (install PHP5-FPM with APC, cURL, suhosin, etc...)'
+	echo '  - php                    (install PHP5-FPM with APC, cURL, etc...)'
 	echo '  - exim4                  (install exim4 mail server)'
 	echo '  - site      [domain.tld] (create nginx vhost and /var/www/$site/public)'
 	echo '  - mysqluser [domain.tld] (create matching mysql user and database)'
