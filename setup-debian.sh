@@ -241,8 +241,8 @@ END
 function install_mysql {
 
 	# Install the MySQL packages
-	check_install mysqld mysql-server
-	check_install mysql mysql-client
+	check_install mysqld mariadb-server
+	check_install mysql mariadb-client
 
 	# Install a low-end copy of the my.cnf to disable InnoDB
 	invoke-rc.d mysql stop
