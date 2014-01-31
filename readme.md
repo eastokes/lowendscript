@@ -6,7 +6,7 @@ Remove excess packages (apache2, sendmail, bind9, samba, nscd, etc) and install 
  - iptables (firewall)
  - dash (replaces bash)
  - syslogd
- - MySQL (v5.5+ without Innodb, configured for lowend VPS)
+ - MariaDB (v5.5+ without Innodb, configured for lowend VPS)
  - PHP-FPM (v5.3+ with APC installed and configured)
  - exim4 (light mail server)
  - nginx (v1.2+ from dotdeb, configured for lowend VPS. Change worker_processes in nginx.conf according to number of CPUs)
@@ -22,7 +22,7 @@ When running the iptables or dropbear install you must specify a SSH port. Remem
 
 ### Warning! This script will overwrite previous configs during reinstallation.
 
-	wget --no-check-certificate https://raw.github.com/Xeoncross/lowendscript/master/setup-debian.sh 
+	wget --no-check-certificate https://raw.github.com/eastokes/lowendscript/master/setup-debian.sh 
 	chmod +x setup-debian.sh
 	./setup-debian.sh dotdeb # not required if using Ubuntu
 	./setup-debian.sh system
@@ -40,7 +40,7 @@ When running the iptables or dropbear install you must specify a SSH port. Remem
 
 ## Development
 
-This repository uses [tagged releases](https://github.com/Xeoncross/lowendscript/releases) and all new additions need to be added to the [development branch](https://github.com/Xeoncross/lowendscript/tree/development).
+This repository uses [tagged releases](https://github.com/eastokes/lowendscript/releases) and all new additions need to be added to the [development branch](https://github.com/eastokes/lowendscript/tree/development).
 
 #### ... and now time for some extras
 
