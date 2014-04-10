@@ -248,22 +248,42 @@ function install_mysql {
 	invoke-rc.d mysql stop
 	cat > /etc/mysql/conf.d/lowendbox.cnf <<END
 # These values override values from /etc/mysql/my.cnf
+# Tuned roughly for 1GB VPS
 
 [mysqld]
-key_buffer = 12M
-query_cache_size = 0
-table_cache = 32
+key_buffer = 80M
+key_buffer_size=48M
+
+query_cache_limit=4M
+query_cache_size=32M
+query_cache_type=1
+
+table_open_cache=512M
+
+sort_buffer_size=1M
+read_buffer_size=1M
+read_rnd_buffer_size=768K
+join_buffer_size=512K
+
+thread_cache_size=80M
+
+connect_timeout=10
+max_connect_errors=10
+max_allowed_packet=1M
+tmp_table_size=16M
+
+thread_concurrency=4
 
 init_connect='SET collation_connection = utf8_unicode_ci'
-init_connect='SET NAMES utf8' 
-character-set-server = utf8 
-collation-server = utf8_unicode_ci 
+init_connect='SET NAMES utf8'
+character-set-server = utf8
+collation-server = utf8_unicode_ci
 skip-character-set-client-handshake
 
 default_storage_engine=MyISAM
 skip-innodb
 
-slow_query_log_file=/var/log/mysql/slow-queries.log
+log-slow-queries=/var/log/mysql/slow-queries.log
 
 [client]
 default-character-set = utf8
