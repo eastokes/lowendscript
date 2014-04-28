@@ -291,8 +291,8 @@ END
 	invoke-rc.d mysql start
 
 	# Generating a new password for the root user.
-	passwd=`get_password mysql:mysql`
-	mysqladmin password "$passwd"
+	passwd=`get_password "root@mysql"`
+	mysqladmin -u root password "$passwd"
 	cat > ~/.my.cnf <<END
 [client]
 user = root
