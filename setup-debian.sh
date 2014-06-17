@@ -292,7 +292,7 @@ END
 
 	# Generating a new password for the root user.
 	passwd=`get_password "root@mysql"`
-	mysqladmin -u root password "$passwd"
+	mysqladmin -u root -p '' password "$passwd"
 	cat > ~/.my.cnf <<END
 [client]
 user = root
