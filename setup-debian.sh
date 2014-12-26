@@ -280,10 +280,11 @@ character-set-server = utf8
 collation-server = utf8_unicode_ci
 skip-character-set-client-handshake
 
-default_storage_engine=MyISAM
+default_tmp_storage_engine = MyISAM
+default_storage_engine = MyISAM
 skip-innodb
 
-log-slow-queries=/var/log/mysql/slow-queries.log
+#log-slow-queries=/var/log/mysql/slow-queries.log
 
 [client]
 default-character-set = utf8
@@ -336,13 +337,10 @@ END
 	if [ -f /etc/php5/fpm/php.ini ]
 		then
 			sed -i \
-				"s/upload_max_filesize = 2M/upload_max_filesize = 200M/" \
+				"s/upload_max_filesize = 2M/upload_max_filesize = 256M/" \
 				/etc/php5/fpm/php.ini
 			sed -i \
-				"s/post_max_size = 8M/post_max_size = 200M/" \
-				/etc/php5/fpm/php.ini
-			sed -i \
-				"s/memory_limit = 128M/memory_limit = 36M/" \
+				"s/post_max_size = 8M/post_max_size = 256M/" \
 				/etc/php5/fpm/php.ini
 	fi
 
