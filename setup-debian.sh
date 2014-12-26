@@ -285,6 +285,9 @@ default_storage_engine = MyISAM
 skip-innodb
 
 #log-slow-queries=/var/log/mysql/slow-queries.log
+slow-query-log = 1
+slow_query_log_file=/var/log/mysql/slow-queries.log
+
 
 [client]
 default-character-set = utf8
@@ -838,7 +841,8 @@ function remove_unneeded {
 # Download ps_mem.py
 ############################################################
 function install_ps_mem {
-	wget http://www.pixelbeat.org/scripts/ps_mem.py -O ~/ps_mem.py
+	#wget http://www.pixelbeat.org/scripts/ps_mem.py -O ~/ps_mem.py
+	wget --no-check-certificate https://raw.github.com/pixelb/ps_mem/master/ps_mem.py  -O ~/ps_mem.py
 	chmod 700 ~/ps_mem.py
 	print_info "ps_mem.py has been setup successfully"
 	print_warn "Use ~/ps_mem.py to execute"
